@@ -2,6 +2,9 @@ import math
 import random
 from collections import OrderedDict
 
+import networkx as nx
+import matplotlib.pyplot as plt
+
 class SynapseError(Exception):
     def __init__(self, pre_id, post_id):
         self.pre_id = pre_id
@@ -114,10 +117,42 @@ class Network(object):
 
     def __init__(self):
         self.neurons = OrderedDict()
-        self.connections = {}
+        self.synapses = set()
 
     def addNeuron(self, neuron):
         self.neurons[neuron.neuron_id] = neuron
+
+    def get_synapses(self):
+        #TODO: should be improved, wastes CPU
+        for neuron in self.neurons.values():
+            for synapse in neuron.presynaptic_connections:
+                if synapse not in self.synapses:
+                    self.synapses.add(synapse)
+        return self.synapses
+
+    def get_num_of_neurons(self):
+        return len(self.neurons)
+
+    def get_network_state(self):
+        pas
+
+    def draw(self):
+        #https://networkx.github.io/documentation/networkx-1.9/examples/drawing/labels_and_colors.html
+
+        #https://stackoverflow.com/questions/28910766/python-networkx-set-node-color-automatically-based-on-number-of-attribute-opt  2
+        G_1 = nx.Graph()
+        tempedgelist = [(s.pre_id, s.post_id) for s in self.get_synapses()]
+        weightlist = [s.weight for s in self.get_synapses()]
+        G_1.add_edges_from(tempedgelist)
+
+        n_nodes = self.get_num_of_neurons()
+        pos = {i: (math.cos(i * 2* math.pi / (self.get_num_of_neurons() - 1)), math.sin(i * 2* math.pi / (self.get_num_of_neurons() - 1))) for i in range(n_nodes)}
+
+        #for node in
+        nx.draw_networkx_nodes(G_1, pos, edge_labels=True)
+        nx.draw_networkx_edges(G_1, pos)
+        plt.show()
+        print("problem")
 
 class NetworkFactory(object):
     @staticmethod
@@ -157,24 +192,29 @@ if __name__ == '__main__':
     first_neuron.add_connection(synapse)
     last_neuron.add_connection(synapse)
 
-    for i in range(5000):
+    synapse = NetworkFactory.makeSynapse(4,8)
+    synapse. weight = -1
+    network.neurons.get(4).add_connection(synapse)
+    network.neurons.get(8).add_connection(synapse)
+
+    for i in range(5):
 
         print("round %s"%i)
         for neuron in network.neurons.values():
+            pre_synapses = []
+            post_synapses = []
             print("neuron: %s"%(neuron.neuron_id))
             if len(neuron.presynaptic_connections) > 0:
-                pre_synapse = neuron.presynaptic_connections[0].post_id
-            else:
-                pre_synapse = None
-            if len(neuron.postsynaptic_connections):
-                post_synapse = neuron.postsynaptic_connections[0].pre_id
-            else:
-                post_synapse = None
-            print("state before: {}\n connected with: \n modified by: {} and modifies: {}".format(neuron._state, post_synapse, pre_synapse ))
+                for s in range(len(neuron.presynaptic_connections)):
+                    pre_synapses.append(neuron.presynaptic_connections[s].post_id)
+            if len(neuron.postsynaptic_connections) > 0:
+                for s in range(len(neuron.postsynaptic_connections)):
+                    post_synapses.append(neuron.postsynaptic_connections[s].pre_id)
+            print("state before: {}\n connected with: \n modified by: {} and modifies: {}".format(neuron._state, post_synapses, pre_synapses ))
             neuron.simulate()
             print("state after: {}\n\n\n".format(neuron._state))
 
-
+    network.draw()
     print("csajé")
 
 

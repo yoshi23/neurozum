@@ -1,5 +1,7 @@
 import math
 
+class ForcedNeuralStateError(Exception):
+    pass
 
 class Neuron(object):
     next_id = 0
@@ -12,7 +14,8 @@ class Neuron(object):
         self.presynaptic_connections = []
         self.postsynaptic_connections = []
         self.bias = 0
-        self.memory = 0
+        self.memory = 0.5
+        self.tau = 4
 
     def add_connection(self, synapse):
         if synapse.pre_id == self.neuron_id:
@@ -24,7 +27,7 @@ class Neuron(object):
 
     def simulate(self):
         def sigmoid(x):
-            return 1 / (1 + math.exp(-x))
+            return 1 / (1 + math.exp(- self.tau * x))
 
         new_state = 0
         for incoming_stimulus in self.postsynaptic_connections:
@@ -34,6 +37,19 @@ class Neuron(object):
 
         for outgoing_stimulus in self.presynaptic_connections:
             outgoing_stimulus.activity = self._state
+
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.getter
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, *args):
+        raise ForcedNeuralStateError("Tried to modify state of neuron manually: {}".format(self.neuron_id))
 
 
 

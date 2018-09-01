@@ -1,5 +1,7 @@
 from network import NetworkFactory
 
+import random
+import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     print("dicsak")
@@ -8,7 +10,7 @@ if __name__ == '__main__':
 
     post_synaptic_element = None
 
-    for i in range(10):
+    for i in range(12):
         print("creating neuron number: %s"%i)
         neuron = NetworkFactory.makeNeuron()
 
@@ -16,10 +18,12 @@ if __name__ == '__main__':
 
         if i > 0:
             for j in range(1,i):
-                synapse = NetworkFactory.makeSynapse(neuron.neuron_id - j, neuron.neuron_id)
-                synapse.weight = -1 #random.random()
-                neuron.add_connection(synapse)
-                network.neurons.get(neuron.neuron_id-j).add_connection(synapse)
+                if random.random() > 0.5:
+                    synapse = NetworkFactory.makeSynapse(neuron.neuron_id - j, neuron.neuron_id)
+                    synapse.weight = (random.random() - 0.5 )* 2
+                    synapse.weight = (random.random() - 0.5 )* 2
+                    neuron.add_connection(synapse)
+                    network.neurons.get(neuron.neuron_id-j).add_connection(synapse)
 
     first_neuron  = network.neurons.get(0)
     last_neuron = network.neurons.get(list(network.neurons.keys())[-1])
@@ -34,7 +38,7 @@ if __name__ == '__main__':
     network.neurons.get(4).add_connection(synapse)
     network.neurons.get(8).add_connection(synapse)
     """
-
+    network.draw()
     for i in range(5):
 
         print("round %s"%i)
@@ -52,6 +56,7 @@ if __name__ == '__main__':
             neuron.simulate()
             print("state after: {}\n\n\n".format(neuron._state))
 
-    network.draw()
+        network.draw()
     print("csajé")
+    plt.show()
 

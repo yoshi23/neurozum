@@ -50,7 +50,7 @@ class Network(object):
         graph.add_edges_from(tempedgelist)
 
         n_nodes = self.get_num_of_neurons()
-        pos = {i: (math.cos(i * 2* math.pi / (self.get_num_of_neurons())), math.sin(i * 2* math.pi / (self.get_num_of_neurons()))) for i in range(n_nodes)}
+        pos = {i: (i/10 * math.cos(i * 2* math.pi / (self.get_num_of_neurons())), i/10 * math.sin(i * 2* math.pi / (self.get_num_of_neurons()))) for i in range(n_nodes)}
         pos_right = {key : (value[0]+max(pos.values())[0] * 0.1, value[1]+max(pos.values())[0] *(Network.draw_counter / 20)) for key, value in pos.items()}
 
         #for node in

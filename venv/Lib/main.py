@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     post_synaptic_element = None
 
-    for i in range(12):
+    for i in range(60):
         print("creating neuron number: %s"%i)
         neuron = NetworkFactory.makeNeuron()
 
@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
         if i > 0:
             for j in range(1,i):
-                if random.random() > 0.5:
+                if random.random() > 0.9:
                     synapse = NetworkFactory.makeSynapse(neuron.neuron_id - j, neuron.neuron_id)
                     synapse.weight = (random.random() - 0.5 )* 2
                     synapse.weight = (random.random() - 0.5 )* 2

@@ -7,12 +7,30 @@ import networkx as nx
 
 import math
 
+import yaml
 
 import matplotlib.pyplot as plt
 
-class Network(object):
+class MissingEntityError(Exception):
+    pass
+class DuplicateIdError(Exception):
+    pass
 
-    def __init__(self):
+class Network(object):
+    next_id = 0
+    taken_ids = []
+
+    def __init__(self, id = None):
+        if (id is not None) and (id in Network.taken_ids):
+            raise DuplicateIdError("ID given for new network is already taken.")
+        elif (id is None) and (Network.next_id in Network.taken_ids): #previous and this case is separated because if user has given the ID, we want to raise error
+            #but in case of simple incrementation, just increment until it's ok.
+            while Network.next_id in Network.taken_ids:
+                Network.next_id += 1
+            id = Network.next_id
+        self.id  = id
+        Network.taken_ids.append(self.id)
+
         self.neurons = OrderedDict()
         self.synapses = set()
 
@@ -67,11 +85,60 @@ class Network(object):
 
 class NetworkFactory(object):
     @staticmethod
-    def makeNetwork():
-        return Network()
+    def makeNetwork(config = None, id = None):
+        if config is None:
+            return Network(id)
+        else:
+            return NetworkFactory._buildNetworkFromConfig(Network(id), config)
     @staticmethod
     def makeNeuron():
         return Neuron()
     @staticmethod
     def makeSynapse(pre_id, post_id):
         return Synapse(pre_id, post_id)
+
+    @staticmethod
+    def configurationLoader(filename):
+        try:
+            with open(filename) as f:
+                config = yaml.load(f)
+        except FileNotFoundError:
+            raise
+        except Exception:
+            raise
+
+        if 'entity' not in config:
+            raise MissingEntityError("No group or neuron defined on top level")
+        else:
+            return config
+            #if config['entity'] == 'group':
+            #    new_network = NetworkFactory.makeNetwork()
+
+        #for key,value in config.items():
+        #    print('{key}: {value}'.format(key=key,value=value))
+
+    @staticmethod
+    def _buildNetworkFromConfig(network, config):
+        for i in range(2):
+            print("creating neuron number: %s" % i)
+            neuron = NetworkFactory.makeNeuron()
+
+            network.addNeuron(neuron)
+
+            if i > 0:
+                for j in range(1, i):
+                    if random.random() > 0.9:
+                        synapse = NetworkFactory.makeSynapse(neuron.neuron_id - j, neuron.neuron_id)
+                        synapse.weight = (random.random() - 0.5) * 2
+                        synapse.weight = (random.random() - 0.5) * 2
+                        neuron.add_connection(synapse)
+                        network.neurons.get(neuron.neuron_id - j).add_connection(synapse)
+
+        first_neuron = network.neurons.get(0)
+        last_neuron = network.neurons.get(list(network.neurons.keys())[-1])
+        synapse = NetworkFactory.makeSynapse(last_neuron.neuron_id, first_neuron.neuron_id)
+        synapse.weight = 0  # -1 #random.random()
+        first_neuron.add_connection(synapse)
+        last_neuron.add_connection(synapse)
+
+        return network

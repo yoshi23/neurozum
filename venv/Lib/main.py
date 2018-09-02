@@ -6,11 +6,12 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     print("dicsak")
 
-    network = NetworkFactory.makeNetwork()
+    network_configuration = NetworkFactory.configurationLoader('./network_config_first.yml')
 
-    post_synaptic_element = None
+    network = NetworkFactory.makeNetwork(network_configuration)
 
-    for i in range(60):
+    """
+    for i in range(1):
         print("creating neuron number: %s"%i)
         neuron = NetworkFactory.makeNeuron()
 
@@ -31,6 +32,7 @@ if __name__ == '__main__':
     synapse.weight = 0 #-1 #random.random()
     first_neuron.add_connection(synapse)
     last_neuron.add_connection(synapse)
+    """
 
     """
     synapse = NetworkFactory.makeSynapse(4,8)

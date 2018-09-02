@@ -28,11 +28,16 @@ class Network(object):
             while Network.next_id in Network.taken_ids:
                 Network.next_id += 1
             id = Network.next_id
-        self.id  = id
-        Network.taken_ids.append(self.id)
+        self.network_id  = id
+        Network.taken_ids.append(self.network_id)
 
+
+        self.subnetworks = OrderedDict()
         self.neurons = OrderedDict()
         self.synapses = set()
+
+    def addSubnetwork(self, sub_network):
+        self.subnetworks[sub_network.network_id] = sub_network
 
     def addNeuron(self, neuron):
         self.neurons[neuron.neuron_id] = neuron
@@ -89,7 +94,7 @@ class NetworkFactory(object):
         if config is None:
             return Network(id)
         else:
-            return NetworkFactory._buildNetworkFromConfig(Network(id), config)
+            return NetworkFactory._buildNetworkFromConfig(config)
     @staticmethod
     def makeNeuron():
         return Neuron()
@@ -107,38 +112,33 @@ class NetworkFactory(object):
         except Exception:
             raise
 
-        if 'entity' not in config:
-            raise MissingEntityError("No group or neuron defined on top level")
+        if 'root' not in config:
+            raise MissingEntityError("Not a valid config file, missing 'root' from the top level")
         else:
             return config
-            #if config['entity'] == 'group':
+            #if config['entity'] == 'subnetwork':
             #    new_network = NetworkFactory.makeNetwork()
 
         #for key,value in config.items():
         #    print('{key}: {value}'.format(key=key,value=value))
 
     @staticmethod
-    def _buildNetworkFromConfig(network, config):
-        for i in range(2):
-            print("creating neuron number: %s" % i)
-            neuron = NetworkFactory.makeNeuron()
+    def _buildNetworkFromConfig(config):
+        networks = []
+        print(type(config))
+        print(config)
+        for entry, subentry in config.items():
+            print(entry)
+            print('subentry: {}'.format(subentry))
+            if subentry['type'] == 'network':
+                network = Network(subentry.get('id'))
+                for i in range(len(subentry.get('content'))):
+                    print('i: {}'.format(i))
+                    print("subentry['content']i: %s"%subentry['content'][i])
+                    sub_networks = NetworkFactory._buildNetworkFromConfig(subentry['content'][i])
+                for i in range(len(sub_networks)):
+                    network.addSubnetwork(sub_networks[i])
+            if subentry['type'] == 'neuron':
+                networks.append(NetworkFactory.makeNeuron())
 
-            network.addNeuron(neuron)
-
-            if i > 0:
-                for j in range(1, i):
-                    if random.random() > 0.9:
-                        synapse = NetworkFactory.makeSynapse(neuron.neuron_id - j, neuron.neuron_id)
-                        synapse.weight = (random.random() - 0.5) * 2
-                        synapse.weight = (random.random() - 0.5) * 2
-                        neuron.add_connection(synapse)
-                        network.neurons.get(neuron.neuron_id - j).add_connection(synapse)
-
-        first_neuron = network.neurons.get(0)
-        last_neuron = network.neurons.get(list(network.neurons.keys())[-1])
-        synapse = NetworkFactory.makeSynapse(last_neuron.neuron_id, first_neuron.neuron_id)
-        synapse.weight = 0  # -1 #random.random()
-        first_neuron.add_connection(synapse)
-        last_neuron.add_connection(synapse)
-
-        return network
+        return networks
